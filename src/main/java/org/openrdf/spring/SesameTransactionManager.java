@@ -54,7 +54,7 @@ public class SesameTransactionManager extends AbstractPlatformTransactionManager
         SesameTransactionObject sesameTransactionObject = (SesameTransactionObject) status.getTransaction();
 
         try {
-            sesameConnectionFactory.endTransaction(!sesameTransactionObject.isRollbackOnly());
+            sesameConnectionFactory.endTransaction(sesameTransactionObject.isRollbackOnly());
         } catch (RepositoryException e) {
             throw new TransactionSystemException(e.getMessage(), e);
         }
@@ -86,7 +86,7 @@ public class SesameTransactionManager extends AbstractPlatformTransactionManager
     @Override
     protected void doRollback(DefaultTransactionStatus status) throws TransactionException {
         try {
-            sesameConnectionFactory.endTransaction(false);
+            sesameConnectionFactory.endTransaction(true);
         } catch (RepositoryException e) {
             throw new TransactionSystemException(e.getMessage(), e);
         }
