@@ -1,5 +1,8 @@
 # Sesame Spring
 
+[![Build Status](https://api.travis-ci.org/ameingast/sesame-spring.png)](https://travis-ci.org/ameingast/sesame-spring)
+
+
 Sesame Spring provides Spring integration for the Openrdf/Sesame library.
 
 ## Spring Transactions
