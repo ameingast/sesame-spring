@@ -50,7 +50,7 @@ public class TransactionTest {
         RepositoryConnection connection = sesameConnectionFactory.getConnection();
 
         // Create a tuple query
-        connection.prepareTupleQuery(QueryLanguage.SPARQL, "SELECT ?s ?p ?o WHERE { ?s ?p ?o . }");
+        TupleQuery tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL, "SELECT ?s ?p ?o WHERE { ?s ?p ?o . }");
 
         // Fetch the result
         TupleQueryResult result = tupleQuery.evaluate();
