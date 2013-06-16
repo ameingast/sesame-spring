@@ -21,26 +21,26 @@ import java.util.Arrays;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "/applicationContext.xml")
-public class SesameTransactionTest {
+public class RepositoryManagerTest {
     @Autowired
-    protected SesameConnectionFactory sesameConnectionFactory;
+    protected SesameConnectionFactory repositoryConnectionFactory;
 
     @Test(expected = SesameTransactionException.class)
     public void testFactoryDoesNotCreateConnection() throws RepositoryException {
-        sesameConnectionFactory.getConnection();
+        repositoryConnectionFactory.getConnection();
     }
 
     @Test
     @Transactional
     public void testTransactionCreatesConnection() throws RepositoryException {
-        RepositoryConnection currentConnection = sesameConnectionFactory.getConnection();
+        RepositoryConnection currentConnection = repositoryConnectionFactory.getConnection();
         Assert.assertNotNull(currentConnection);
     }
 
     @Test
     @Transactional
     public void testTransactionDisablesAutoCommit() throws RepositoryException {
-        RepositoryConnection connection = sesameConnectionFactory.getConnection();
+        RepositoryConnection connection = repositoryConnectionFactory.getConnection();
 
         Assert.assertFalse(connection.isAutoCommit());
     }
@@ -48,7 +48,7 @@ public class SesameTransactionTest {
     @Test
     @Transactional
     public void testWrapTransactions() {
-        RepositoryConnection connection = sesameConnectionFactory.getConnection();
+        RepositoryConnection connection = repositoryConnectionFactory.getConnection();
 
         for (RepositoryConnection repositoryConnection : Arrays.asList(transactionScope(), transactionScopeWithoutAnnotation())) {
             Assert.assertTrue(connection == repositoryConnection);
@@ -57,11 +57,11 @@ public class SesameTransactionTest {
 
     @Transactional
     protected RepositoryConnection transactionScope() {
-        return sesameConnectionFactory.getConnection();
+        return repositoryConnectionFactory.getConnection();
     }
 
     protected RepositoryConnection transactionScopeWithoutAnnotation() {
-        return sesameConnectionFactory.getConnection();
+        return repositoryConnectionFactory.getConnection();
     }
 
     @Test
@@ -72,7 +72,7 @@ public class SesameTransactionTest {
     }
 
     protected void assertDataPresent() throws Exception {
-        RepositoryConnection connection = sesameConnectionFactory.getConnection();
+        RepositoryConnection connection = repositoryConnectionFactory.getConnection();
         final TupleQuery tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL, "SELECT ?s ?p ?o WHERE { ?s ?p ?o . }");
         TupleQueryResult result = tupleQuery.evaluate();
 
@@ -96,7 +96,7 @@ public class SesameTransactionTest {
         URI b = f.createURI("http://example.com/b");
         URI c = f.createURI("http://example.com/c");
 
-        RepositoryConnection connection = sesameConnectionFactory.getConnection();
+        RepositoryConnection connection = repositoryConnectionFactory.getConnection();
         connection.add(a, b, c);
     }
 }

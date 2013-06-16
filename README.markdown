@@ -27,7 +27,7 @@ Wiring up a simple in-memory repository to the transaction manager:
 </bean>
 
 <!-- Transaction manager configuration -->
-<bean id="sesameConnectionFactory" class="org.openrdf.spring.SesameConnectionFactory">
+<bean id="sesameConnectionFactory" class="org.openrdf.spring.RepositoryConnectionFactory">
     <constructor-arg ref="sesameRepository"/>
 </bean>
 

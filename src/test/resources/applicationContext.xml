@@ -22,11 +22,19 @@
         <property name="persist" value="false"/>
     </bean>
 
-    <bean id="sesameConnectionFactory" class="org.openrdf.spring.SesameConnectionFactory">
+    <bean id="repositoryConnectionFactory" class="org.openrdf.spring.RepositoryConnectionFactory">
         <constructor-arg ref="sesameRepository"/>
     </bean>
 
+    <bean id="repositoryManagerConnectionFactory" class="org.openrdf.spring.RepositoryManagerConnectionFactory">
+        <constructor-arg ref="repositoryManager"/>
+    </bean>
+
+    <bean id="repositoryManager" class="org.openrdf.repository.manager.LocalRepositoryManager">
+        <constructor-arg value="."/>
+    </bean>
+
     <bean id="transactionManager" class="org.openrdf.spring.SesameTransactionManager">
-        <constructor-arg ref="sesameConnectionFactory"/>
+        <constructor-arg ref="repositoryConnectionFactory"/>
     </bean>
 </beans>
