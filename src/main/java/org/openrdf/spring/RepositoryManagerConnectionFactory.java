@@ -5,108 +5,121 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.manager.RepositoryManager;
+import org.springframework.beans.factory.DisposableBean;
 
 /**
- * <p>{@link RepositoryManagerConnectionFactory} handles connections to a {@link RepositoryManager} and manages
- * the transaction state (represented by {@link SesameTransactionObject}).</p>
+ * <p>{@link RepositoryManagerConnectionFactory} handles connections to a single {@link Repository} managed by a
+ * {@link RepositoryManager}. It also manages transaction state (represented by {@link  SesameTransactionObject}).</p>
  * <p/>
- * <p>The {@link RepositoryManager}'s repository-id is set via the property
- * {@link RepositoryManagerConnectionFactory#setLocalRepositoryId(String)}/
- * {@link org.openrdf.spring.RepositoryManagerConnectionFactory#getLocalRepositoryId()}.
+ * <p>A {@link RepositoryManager} can hold multiple {@link Repository}s. To identify the {@link Repository} to
+ * which connections will be opened, a <i>repository-id</i> has to be provided as a constructor argument.</p>
  * <p/>
- * </p>It supports a single repository-id per thread; i.e. you can use the {@link RepositoryManagerConnectionFactory}
- * with different @{link Repository}s in different threads.
- * <p/>
- * <p>This class provides methods to access <i>transactional</i> connections from the outside and is typically
- * the only class that library users interact with.</p>
  *
  * @author ameingast@gmail.com
+ * @see RepositoryConnectionFactory
  */
-public class RepositoryManagerConnectionFactory implements SesameConnectionFactory {
+public class RepositoryManagerConnectionFactory implements SesameConnectionFactory, DisposableBean {
     private final RepositoryManager repositoryManager;
 
-    private ThreadLocal<String> localRepositoryId;
+    private final String repositoryId;
 
-    private ThreadLocal<RepositoryConnectionFactory> localConnectionFactory;
+    private RepositoryConnectionFactory repositoryConnectionFactory;
 
-    public RepositoryManagerConnectionFactory(RepositoryManager repositoryManager) {
+    /**
+     * <p>Creates a new {@link RepositoryManagerConnectionFactory} for the {@link Repository} identified by the
+     * provided <code>repositoryId</code> in the {@ink RepositoryManager} <code>repositoryManager</code>.</p>
+     *
+     * @param repositoryManager The {@link RepositoryManager} that holds the {@link Repository} to which connections
+     *                          will be opened.
+     * @param repositoryId      The id of the {@link Repository} which is used by the {@link RepositoryManager} to
+     *                          identify the {@link Repository} to which connections will be opened.
+     */
+    public RepositoryManagerConnectionFactory(RepositoryManager repositoryManager, String repositoryId) {
         this.repositoryManager = repositoryManager;
-        localRepositoryId = new ThreadLocal<String>();
-        localConnectionFactory = new ThreadLocal<RepositoryConnectionFactory>();
+        this.repositoryId = repositoryId;
     }
 
+    /**
+     * @inheritDoc
+     */
     @Override
     public RepositoryConnection getConnection() {
-        initializeLocalConnectionFactory();
-
-        return localConnectionFactory.get().getConnection();
+        initializeRepository();
+        return repositoryConnectionFactory.getConnection();
     }
 
-    private void initializeLocalConnectionFactory() {
-        if (localConnectionFactory.get() == null) {
-            if (localRepositoryId.get() == null || localRepositoryId.get().isEmpty()) {
-                throw new RuntimeException("Local repository-id has not been initialized");
-            }
-
-            try {
-                Repository repository = repositoryManager.getRepository(localRepositoryId.get());
-                RepositoryConnectionFactory repositoryConnectionFactory = new RepositoryConnectionFactory(repository);
-
-                localConnectionFactory.set(repositoryConnectionFactory);
-            } catch (RepositoryException e) {
-                throw new RuntimeException(e);
-            } catch (RepositoryConfigException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
+    /**
+     * @inheritDoc
+     */
     @Override
     public void closeConnection() {
-        try {
-            initializeLocalConnectionFactory();
+        initializeRepository();
+        repositoryConnectionFactory.closeConnection();
+    }
 
-            localConnectionFactory.get().closeConnection();
-        } finally {
-            localConnectionFactory.remove();
+    /**
+     * @inheritDoc
+     */
+    @Override
+    public SesameTransactionObject createTransaction() throws RepositoryException {
+        initializeRepository();
+        return repositoryConnectionFactory.createTransaction();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    @Override
+    public void endTransaction(boolean rollback) throws RepositoryException {
+        initializeRepository();
+        repositoryConnectionFactory.endTransaction(rollback);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    @Override
+    public SesameTransactionObject getLocalTransactionObject() {
+        initializeRepository();
+        return repositoryConnectionFactory.getLocalTransactionObject();
+    }
+
+    private void initializeRepository() {
+        if (repositoryConnectionFactory != null) {
+            return;
+        }
+
+        try {
+            Repository repository = repositoryManager.getRepository(repositoryId);
+            if (repository == null) {
+                throw new SesameTransactionException("No such repository: " + repositoryId);
+            }
+            repositoryConnectionFactory = new RepositoryConnectionFactory(repository);
+        } catch (RepositoryConfigException e) {
+            throw new SesameTransactionException(e);
+        } catch (RepositoryException e) {
+            throw new SesameTransactionException(e);
         }
     }
 
+    /**
+     * <p>Shuts down the associated {@link Repository} if it was initialized before.</p>
+     *
+     * @throws Exception {@see Repository#shutDown}
+     */
     @Override
-    public SesameTransactionObject createTransaction() throws RepositoryException {
-        initializeLocalConnectionFactory();
-
-        return localConnectionFactory.get().createTransaction();
-    }
-
-    @Override
-    public void endTransaction(boolean rollback) throws RepositoryException {
-        initializeLocalConnectionFactory();
-
-        localConnectionFactory.get().endTransaction(rollback);
-    }
-
-    @Override
-    public SesameTransactionObject getLocalTransactionObject() {
-        initializeLocalConnectionFactory();
-
-        return localConnectionFactory.get().getLocalTransactionObject();
-    }
-
-    public String getLocalRepositoryId() {
-        return localRepositoryId.get();
-    }
-
-    public void setLocalRepositoryId(String repositoryId) {
-        this.localRepositoryId.set(repositoryId);
+    public void destroy() throws Exception {
+        if (repositoryConnectionFactory != null) {
+            repositoryConnectionFactory.destroy();
+        }
     }
 
     @Override
     public String toString() {
         return "RepositoryManagerConnectionFactory{" +
                 "repositoryManager=" + repositoryManager +
-                ", repositoryId='" + localRepositoryId + '\'' +
-                ", connectionFactory=" + localConnectionFactory +
+                ", repositoryId='" + repositoryId + '\'' +
+                ", repositoryConnectionFactory=" + repositoryConnectionFactory +
                 '}';
     }
 }

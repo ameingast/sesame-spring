@@ -20,8 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Arrays;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = "/applicationContext.xml")
-public class RepositoryManagerTest {
+@ContextConfiguration(locations = "/repositoryTestContext.xml")
+public class RepositoryConnectionFactoryTest {
     @Autowired
     protected SesameConnectionFactory repositoryConnectionFactory;
 

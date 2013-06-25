@@ -26,11 +26,8 @@
         <constructor-arg ref="sesameRepository"/>
     </bean>
 
-    <bean id="repositoryManagerConnectionFactory" class="org.openrdf.spring.RepositoryManagerConnectionFactory">
-        <constructor-arg ref="repositoryManager"/>
-    </bean>
-
-    <bean id="repositoryManager" class="org.openrdf.repository.manager.LocalRepositoryManager">
+    <bean id="repositoryManager" class="org.openrdf.repository.manager.LocalRepositoryManager"
+          init-method="initialize">
         <constructor-arg value="."/>
     </bean>
 
