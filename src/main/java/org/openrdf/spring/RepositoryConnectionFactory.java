@@ -98,7 +98,7 @@ public class RepositoryConnectionFactory implements DisposableBean, SesameConnec
     @Override
     public SesameTransactionObject createTransaction() throws RepositoryException {
         RepositoryConnection connection = repository.getConnection();
-        connection.setAutoCommit(false);
+        connection.begin();
 
         SesameTransactionObject sesameTransactionObject = new SesameTransactionObject(connection);
         localTransactionObject.set(sesameTransactionObject);
