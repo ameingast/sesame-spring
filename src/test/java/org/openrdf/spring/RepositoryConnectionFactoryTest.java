@@ -42,7 +42,7 @@ public class RepositoryConnectionFactoryTest {
     public void testTransactionDisablesAutoCommit() throws RepositoryException {
         RepositoryConnection connection = repositoryConnectionFactory.getConnection();
 
-        Assert.assertFalse(connection.isAutoCommit());
+        Assert.assertTrue(connection.isActive());
     }
 
     @Test
