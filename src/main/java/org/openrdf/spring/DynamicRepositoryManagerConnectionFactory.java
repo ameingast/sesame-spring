@@ -138,7 +138,8 @@ public class DynamicRepositoryManagerConnectionFactory implements SesameConnecti
     }
 
     /**
-     * <p>Shuts down the associated {@link Repository}s if they were initialized before.</p>
+     * <p>Shuts down the associated {@link Repository}s if they were initialized before and resets the
+     * state of the object.</p>
      *
      * @throws Exception {@see Repository#shutDown}
      */
@@ -147,6 +148,8 @@ public class DynamicRepositoryManagerConnectionFactory implements SesameConnecti
         for (RepositoryConnectionFactory repositoryConnectionFactory : repositoryConnectionFactoryMap.values()) {
             repositoryConnectionFactory.destroy();
         }
+
+        repositoryConnectionFactoryMap.clear();
     }
 
     @Override
@@ -154,6 +157,7 @@ public class DynamicRepositoryManagerConnectionFactory implements SesameConnecti
         return "DynamicRepositoryManagerConnectionFactory{" +
                 "repositoryManager=" + repositoryManager +
                 ", repositoryIdProvider=" + repositoryIdProvider +
+                ", repositoryImplConfig=" + repositoryImplConfig +
                 ", repositoryConnectionFactoryMap=" + repositoryConnectionFactoryMap +
                 '}';
     }

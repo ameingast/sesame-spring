@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
        xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns="http://www.springframework.org/schema/beans"
        xsi:schemaLocation="
         http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans.xsd
@@ -13,6 +13,7 @@
     <context:annotation-config/>
     <context:component-scan base-package="org.openrdf.spring"/>
     <tx:annotation-driven transaction-manager="transactionManager"/>
+    <tx:annotation-driven transaction-manager="repositoryTransactionManager"/>
 
     <bean id="sesameRepository" class="org.openrdf.repository.sail.SailRepository" init-method="initialize">
         <constructor-arg ref="memoryStore"/>
@@ -26,12 +27,21 @@
         <constructor-arg ref="sesameRepository"/>
     </bean>
 
+    <bean id="transactionManager" class="org.openrdf.spring.SesameTransactionManager">
+        <constructor-arg ref="repositoryConnectionFactory"/>
+    </bean>
+
     <bean id="repositoryManager" class="org.openrdf.repository.manager.LocalRepositoryManager"
           init-method="initialize">
         <constructor-arg value="."/>
     </bean>
 
-    <bean id="transactionManager" class="org.openrdf.spring.SesameTransactionManager">
-        <constructor-arg ref="repositoryConnectionFactory"/>
+    <bean id="repositoryManagerConnectionFactory" class="org.openrdf.spring.RepositoryManagerConnectionFactory">
+        <constructor-arg index="0" ref="repositoryManager"/>
+        <constructor-arg index="1" value="SYSTEM"/>
+    </bean>
+
+    <bean id="repositoryTransactionManager" class="org.openrdf.spring.SesameTransactionManager">
+        <constructor-arg ref="repositoryManagerConnectionFactory"/>
     </bean>
 </beans>

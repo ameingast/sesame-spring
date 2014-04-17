@@ -21,59 +21,59 @@ import java.util.Arrays;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "/repositoryTestContext.xml")
-public class RepositoryConnectionFactoryTest {
+public class RepositoryManagerConnectionFactoryTest {
     @Autowired
-    protected SesameConnectionFactory repositoryConnectionFactory;
+    private SesameConnectionFactory repositoryManagerConnectionFactory;
 
     @Test(expected = SesameTransactionException.class)
     public void testFactoryDoesNotCreateConnection() throws RepositoryException {
-        repositoryConnectionFactory.getConnection();
+        repositoryManagerConnectionFactory.getConnection();
     }
 
     @Test
-    @Transactional("transactionManager")
+    @Transactional("repositoryTransactionManager")
     public void testTransactionCreatesConnection() throws RepositoryException {
-        RepositoryConnection currentConnection = repositoryConnectionFactory.getConnection();
+        RepositoryConnection currentConnection = repositoryManagerConnectionFactory.getConnection();
         Assert.assertNotNull(currentConnection);
     }
 
     @Test
-    @Transactional("transactionManager")
+    @Transactional("repositoryTransactionManager")
     public void testTransactionDisablesAutoCommit() throws RepositoryException {
-        RepositoryConnection connection = repositoryConnectionFactory.getConnection();
+        RepositoryConnection connection = repositoryManagerConnectionFactory.getConnection();
 
         Assert.assertTrue(connection.isActive());
     }
 
     @Test
-    @Transactional("transactionManager")
+    @Transactional("repositoryTransactionManager")
     public void testWrapTransactions() {
-        RepositoryConnection connection = repositoryConnectionFactory.getConnection();
+        RepositoryConnection connection = repositoryManagerConnectionFactory.getConnection();
 
         for (RepositoryConnection repositoryConnection : Arrays.asList(transactionScope(), transactionScopeWithoutAnnotation())) {
             Assert.assertTrue(connection == repositoryConnection);
         }
     }
 
-    @Transactional("transactionManager")
+    @Transactional
     protected RepositoryConnection transactionScope() {
-        return repositoryConnectionFactory.getConnection();
+        return repositoryManagerConnectionFactory.getConnection();
     }
 
     protected RepositoryConnection transactionScopeWithoutAnnotation() {
-        return repositoryConnectionFactory.getConnection();
+        return repositoryManagerConnectionFactory.getConnection();
     }
 
     @Test
-    @Transactional("transactionManager")
+    @Transactional("repositoryTransactionManager")
     public void testWriteData() throws Exception {
         addData();
         assertDataPresent();
     }
 
     protected void assertDataPresent() throws Exception {
-        RepositoryConnection connection = repositoryConnectionFactory.getConnection();
-        final TupleQuery tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL, "SELECT ?s ?p ?o WHERE { ?s ?p ?o . }");
+        RepositoryConnection connection = repositoryManagerConnectionFactory.getConnection();
+        final TupleQuery tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL, "SELECT ?s ?o WHERE { ?s <http://example.com/b> ?o . }");
         TupleQueryResult result = tupleQuery.evaluate();
 
         SesameResultHandlers.withTupleQueryResult(result, new SesameResultHandlers.TupleQueryResultHandler() {
@@ -84,7 +84,6 @@ public class RepositoryConnectionFactoryTest {
                 BindingSet bindingSet = tupleQueryResult.next();
 
                 Assert.assertEquals("http://example.com/a", bindingSet.getBinding("s").getValue().stringValue());
-                Assert.assertEquals("http://example.com/b", bindingSet.getBinding("p").getValue().stringValue());
                 Assert.assertEquals("http://example.com/c", bindingSet.getBinding("o").getValue().stringValue());
             }
         });
@@ -96,7 +95,7 @@ public class RepositoryConnectionFactoryTest {
         URI b = f.createURI("http://example.com/b");
         URI c = f.createURI("http://example.com/c");
 
-        RepositoryConnection connection = repositoryConnectionFactory.getConnection();
+        RepositoryConnection connection = repositoryManagerConnectionFactory.getConnection();
         connection.add(a, b, c);
     }
 }
