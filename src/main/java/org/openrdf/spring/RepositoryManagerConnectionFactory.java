@@ -1,5 +1,6 @@
 package org.openrdf.spring;
 
+import org.openrdf.repository.config.RepositoryImplConfig;
 import org.openrdf.repository.manager.RepositoryManager;
 
 /**
@@ -17,6 +18,15 @@ public class RepositoryManagerConnectionFactory extends DynamicRepositoryManager
      */
     public RepositoryManagerConnectionFactory(RepositoryManager repositoryManager, final String repositoryId) {
         super(repositoryManager, new RepositoryIdProvider() {
+            @Override
+            public String getRepositoryId() {
+                return repositoryId;
+            }
+        });
+    }
+
+    public RepositoryManagerConnectionFactory(RepositoryManager repositoryManager, RepositoryImplConfig repositoryImplConfig, final String repositoryId) {
+        super(repositoryManager, repositoryImplConfig, new RepositoryIdProvider() {
             @Override
             public String getRepositoryId() {
                 return repositoryId;
