@@ -66,7 +66,13 @@ public class SesameTransactionManager extends AbstractPlatformTransactionManager
      */
     @Override
     protected void doBegin(Object transaction, TransactionDefinition definition) throws TransactionException {
+        SesameTransactionObject sesameTransactionObject = (SesameTransactionObject) transaction;
 
+        sesameTransactionObject.setTimeout(definition.getTimeout());
+        sesameTransactionObject.setIsolationLevel(definition.getIsolationLevel());
+        sesameTransactionObject.setPropagationBehavior(definition.getPropagationBehavior());
+        sesameTransactionObject.setReadOnly(definition.isReadOnly());
+        sesameTransactionObject.setName("[" + Thread.currentThread().getName() + "] " + definition.getName());
     }
 
     /**

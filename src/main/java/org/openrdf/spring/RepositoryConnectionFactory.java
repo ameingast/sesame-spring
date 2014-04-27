@@ -48,6 +48,10 @@ public class RepositoryConnectionFactory implements DisposableBean, SesameConnec
             if (!repositoryConnection.isOpen()) {
                 throw new SesameTransactionException("Connection closed during transaction");
             }
+
+            if (!repositoryConnection.isActive()) {
+                throw new SesameTransactionException("No transaction active");
+            }
         } catch (RepositoryException e) {
             throw new SesameTransactionException(e);
         }
@@ -97,10 +101,10 @@ public class RepositoryConnectionFactory implements DisposableBean, SesameConnec
      */
     @Override
     public SesameTransactionObject createTransaction() throws RepositoryException {
-        RepositoryConnection connection = repository.getConnection();
-        connection.begin();
+        RepositoryConnection repositoryConnection = repository.getConnection();
+        repositoryConnection.begin();
 
-        SesameTransactionObject sesameTransactionObject = new SesameTransactionObject(connection);
+        SesameTransactionObject sesameTransactionObject = new SesameTransactionObject(repositoryConnection);
         localTransactionObject.set(sesameTransactionObject);
 
         return sesameTransactionObject;
@@ -121,6 +125,10 @@ public class RepositoryConnectionFactory implements DisposableBean, SesameConnec
 
         if (!repositoryConnection.isOpen()) {
             throw new SesameTransactionException("Connection closed during transaction");
+        }
+
+        if (!repositoryConnection.isActive()) {
+            throw new SesameTransactionException("No transaction active");
         }
 
         if (rollback) {

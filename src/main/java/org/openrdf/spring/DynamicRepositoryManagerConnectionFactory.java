@@ -53,7 +53,7 @@ public class DynamicRepositoryManagerConnectionFactory implements SesameConnecti
         this.repositoryManager = repositoryManager;
         this.repositoryImplConfig = repositoryImplConfig;
         this.repositoryIdProvider = repositoryIdProvider;
-        this.repositoryConnectionFactoryMap = new ConcurrentHashMap<String, RepositoryConnectionFactory>();
+        this.repositoryConnectionFactoryMap = new ConcurrentHashMap<String, RepositoryConnectionFactory>(128);
     }
 
     /**
