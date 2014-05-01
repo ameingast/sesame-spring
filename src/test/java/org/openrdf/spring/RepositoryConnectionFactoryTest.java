@@ -2,29 +2,17 @@ package org.openrdf.spring;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openrdf.model.URI;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.IsolationLevel;
+import org.openrdf.IsolationLevels;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.openrdf.repository.sail.SailRepository;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = "/repositoryTestContext.xml")
-public class RepositoryConnectionFactoryTest {
-    @Autowired
-    protected SesameConnectionFactory repositoryConnectionFactory;
-
+public class RepositoryConnectionFactoryTest extends BaseTest {
     @Test(expected = SesameTransactionException.class)
     public void testFactoryDoesNotCreateConnection() throws RepositoryException {
         repositoryConnectionFactory.getConnection();
@@ -34,6 +22,7 @@ public class RepositoryConnectionFactoryTest {
     @Transactional("transactionManager")
     public void testTransactionCreatesConnection() throws RepositoryException {
         RepositoryConnection currentConnection = repositoryConnectionFactory.getConnection();
+
         Assert.assertNotNull(currentConnection);
     }
 
@@ -71,32 +60,29 @@ public class RepositoryConnectionFactoryTest {
         assertDataPresent();
     }
 
-    protected void assertDataPresent() throws Exception {
+    @Test
+    @Transactional(value = "transactionManager")
+    public void testTransactionIsolationLevel() {
         RepositoryConnection connection = repositoryConnectionFactory.getConnection();
-        final TupleQuery tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL, "SELECT ?s ?p ?o WHERE { ?s ?p ?o . }");
-        TupleQueryResult result = tupleQuery.evaluate();
+        SailRepository sailRepository = (SailRepository) connection.getRepository();
+        IsolationLevel defaultIsolationLevel = sailRepository.getSail().getDefaultIsolationLevel();
 
-        SesameResultHandlers.withTupleQueryResult(result, new SesameResultHandlers.TupleQueryResultHandler() {
-            @Override
-            public void handle(TupleQueryResult tupleQueryResult) throws Exception {
-                Assert.assertTrue(tupleQueryResult.hasNext());
-
-                BindingSet bindingSet = tupleQueryResult.next();
-
-                Assert.assertEquals("http://example.com/a", bindingSet.getBinding("s").getValue().stringValue());
-                Assert.assertEquals("http://example.com/b", bindingSet.getBinding("p").getValue().stringValue());
-                Assert.assertEquals("http://example.com/c", bindingSet.getBinding("o").getValue().stringValue());
-            }
-        });
+        Assert.assertEquals(defaultIsolationLevel, connection.getIsolationLevel());
     }
 
-    protected void addData() throws RepositoryException {
-        ValueFactory f = ValueFactoryImpl.getInstance();
-        URI a = f.createURI("http://example.com/a");
-        URI b = f.createURI("http://example.com/b");
-        URI c = f.createURI("http://example.com/c");
-
+    @Test
+    @Transactional(value = "transactionManager", isolation = Isolation.SERIALIZABLE)
+    public void testTransactionWithSerializableIsolationLevel() {
         RepositoryConnection connection = repositoryConnectionFactory.getConnection();
-        connection.add(a, b, c);
+
+        Assert.assertEquals(IsolationLevels.SERIALIZABLE, connection.getIsolationLevel());
+    }
+
+    @Test
+    @Transactional(value = "transactionManager", isolation = Isolation.READ_UNCOMMITTED)
+    public void testTransactionWithReadUnCommittedIsolationLevel() {
+        RepositoryConnection connection = repositoryConnectionFactory.getConnection();
+
+        Assert.assertEquals(IsolationLevels.READ_UNCOMMITTED, connection.getIsolationLevel());
     }
 }

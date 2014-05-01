@@ -1,11 +1,18 @@
 package org.openrdf.spring;
 
+import org.openrdf.IsolationLevel;
+import org.openrdf.repository.Repository;
+import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.sail.SailRepository;
+import org.openrdf.sail.Sail;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionSystemException;
 import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionStatus;
+
+import static org.openrdf.spring.IsolationLevelAdapter.adaptToRdfIsolation;
 
 /**
  * <p>{@link SesameTransactionManager} manages the transaction lifecycle of a {@link SesameTransactionObject}.</p>
@@ -65,14 +72,28 @@ public class SesameTransactionManager extends AbstractPlatformTransactionManager
      * {@see AbstractPlatformTransactionManager#doBegin}
      */
     @Override
-    protected void doBegin(Object transaction, TransactionDefinition definition) throws TransactionException {
+    protected void doBegin(Object transaction, TransactionDefinition transactionDefinition) throws TransactionException {
         SesameTransactionObject sesameTransactionObject = (SesameTransactionObject) transaction;
 
-        sesameTransactionObject.setTimeout(definition.getTimeout());
-        sesameTransactionObject.setIsolationLevel(definition.getIsolationLevel());
-        sesameTransactionObject.setPropagationBehavior(definition.getPropagationBehavior());
-        sesameTransactionObject.setReadOnly(definition.isReadOnly());
-        sesameTransactionObject.setName("[" + Thread.currentThread().getName() + "] " + definition.getName());
+        sesameTransactionObject.setTimeout(transactionDefinition.getTimeout());
+        sesameTransactionObject.setIsolationLevel(transactionDefinition.getIsolationLevel());
+        sesameTransactionObject.setPropagationBehavior(transactionDefinition.getPropagationBehavior());
+        sesameTransactionObject.setReadOnly(transactionDefinition.isReadOnly());
+        sesameTransactionObject.setName(Thread.currentThread().getName() + " " + transactionDefinition.getName());
+
+        setIsolationLevel(sesameTransactionObject, transactionDefinition);
+    }
+
+    private void setIsolationLevel(SesameTransactionObject sesameTransactionObject, TransactionDefinition transactionDefinition) {
+        RepositoryConnection repositoryConnection = sesameTransactionObject.getRepositoryConnection();
+        Repository repository = repositoryConnection.getRepository();
+
+        if (repository instanceof SailRepository) {
+            Sail sail = ((SailRepository) repository).getSail();
+            IsolationLevel isolationLevel = adaptToRdfIsolation(sail, transactionDefinition.getIsolationLevel());
+
+            repositoryConnection.setIsolationLevel(isolationLevel);
+        }
     }
 
     /**
