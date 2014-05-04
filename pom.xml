@@ -144,7 +144,7 @@
     </build>
 
     <properties>
-        <spring.version>4.0.3.RELEASE</spring.version>
+        <spring.version>4.0.4.RELEASE</spring.version>
         <sesame.version>${project.version}</sesame.version>
         <junit.version>4.11</junit.version>
         <slf4j.version>1.7.7</slf4j.version>
