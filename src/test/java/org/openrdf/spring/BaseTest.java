@@ -26,12 +26,12 @@ public abstract class BaseTest {
     @Autowired
     protected SesameConnectionFactory repositoryManagerConnectionFactory;
 
-    protected void assertDataPresent() throws Exception {
-        RepositoryConnection connection = repositoryManagerConnectionFactory.getConnection();
+    protected static void assertDataPresent(SesameConnectionFactory sesameConnectionFactory) throws Exception {
+        RepositoryConnection connection = sesameConnectionFactory.getConnection();
         final TupleQuery tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL, "SELECT ?s ?o WHERE { ?s <http://example.com/b> ?o . }");
         TupleQueryResult result = tupleQuery.evaluate();
 
-        SesameResultHandlers.withTupleQueryResult(result, new SesameResultHandlers.TupleQueryResultHandler() {
+        withTupleQueryResult(result, new TupleQueryResultHandler() {
             @Override
             public void handle(TupleQueryResult tupleQueryResult) throws Exception {
                 Assert.assertTrue(tupleQueryResult.hasNext());
@@ -44,13 +44,26 @@ public abstract class BaseTest {
         });
     }
 
-    protected void addData() throws RepositoryException {
+    private static void withTupleQueryResult(TupleQueryResult tupleQueryResult,
+                                             TupleQueryResultHandler tupleQueryResultHandler) throws Exception {
+        try {
+            tupleQueryResultHandler.handle(tupleQueryResult);
+        } finally {
+            tupleQueryResult.close();
+        }
+    }
+
+    protected static void addData(SesameConnectionFactory sesameConnectionFactory) throws RepositoryException {
         ValueFactory f = ValueFactoryImpl.getInstance();
         URI a = f.createURI("http://example.com/a");
         URI b = f.createURI("http://example.com/b");
         URI c = f.createURI("http://example.com/c");
 
-        RepositoryConnection connection = repositoryManagerConnectionFactory.getConnection();
+        RepositoryConnection connection = sesameConnectionFactory.getConnection();
         connection.add(a, b, c);
+    }
+
+    static interface TupleQueryResultHandler {
+        void handle(TupleQueryResult tupleQueryResult) throws Exception;
     }
 }

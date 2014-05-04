@@ -52,7 +52,7 @@ public class RepositoryManagerConnectionFactoryTest extends BaseTest {
     @Test
     @Transactional("repositoryTransactionManager")
     public void testWriteData() throws Exception {
-        addData();
-        assertDataPresent();
+        addData(repositoryManagerConnectionFactory);
+        assertDataPresent(repositoryManagerConnectionFactory);
     }
 }

@@ -20,6 +20,12 @@ public class RepositoryConnectionFactoryTest extends BaseTest {
 
     @Test
     @Transactional("transactionManager")
+    public void testEmptyTransaction() {
+        Assert.assertEquals(0, 0);
+    }
+
+    @Test
+    @Transactional("transactionManager")
     public void testTransactionCreatesConnection() throws RepositoryException {
         RepositoryConnection currentConnection = repositoryConnectionFactory.getConnection();
 
@@ -45,19 +51,19 @@ public class RepositoryConnectionFactoryTest extends BaseTest {
     }
 
     @Transactional("transactionManager")
-    protected RepositoryConnection transactionScope() {
+    public RepositoryConnection transactionScope() {
         return repositoryConnectionFactory.getConnection();
     }
 
-    protected RepositoryConnection transactionScopeWithoutAnnotation() {
+    public RepositoryConnection transactionScopeWithoutAnnotation() {
         return repositoryConnectionFactory.getConnection();
     }
 
     @Test
     @Transactional("transactionManager")
     public void testWriteData() throws Exception {
-        addData();
-        assertDataPresent();
+        addData(repositoryConnectionFactory);
+        assertDataPresent(repositoryConnectionFactory);
     }
 
     @Test
