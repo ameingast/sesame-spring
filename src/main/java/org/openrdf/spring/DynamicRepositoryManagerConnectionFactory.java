@@ -9,8 +9,8 @@ import org.openrdf.repository.config.RepositoryImplConfig;
 import org.openrdf.repository.manager.RepositoryManager;
 import org.springframework.beans.factory.DisposableBean;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * <p>{@link RepositoryManagerConnectionFactory} handles connections to a multiple corresponding
@@ -53,7 +53,7 @@ public class DynamicRepositoryManagerConnectionFactory implements SesameConnecti
         this.repositoryManager = repositoryManager;
         this.repositoryImplConfig = repositoryImplConfig;
         this.repositoryIdProvider = repositoryIdProvider;
-        this.repositoryConnectionFactoryMap = new ConcurrentHashMap<String, RepositoryConnectionFactory>(128);
+        this.repositoryConnectionFactoryMap = new HashMap<String, RepositoryConnectionFactory>(128);
     }
 
     /**
@@ -96,7 +96,7 @@ public class DynamicRepositoryManagerConnectionFactory implements SesameConnecti
         return getRepositoryConnectionFactory().getLocalTransactionObject();
     }
 
-    private RepositoryConnectionFactory getRepositoryConnectionFactory() {
+    private synchronized RepositoryConnectionFactory getRepositoryConnectionFactory() {
         String repositoryId = repositoryIdProvider.getRepositoryId();
         RepositoryConnectionFactory repositoryConnectionFactory = repositoryConnectionFactoryMap.get(repositoryId);
 
@@ -109,12 +109,6 @@ public class DynamicRepositoryManagerConnectionFactory implements SesameConnecti
     }
 
     private RepositoryConnectionFactory initializeRepositoryConnectionFactory(String repositoryId) {
-        RepositoryConnectionFactory repositoryConnectionFactory = repositoryConnectionFactoryMap.get(repositoryId);
-
-        if (repositoryConnectionFactory != null) {
-            return repositoryConnectionFactory;
-        }
-
         try {
             Repository repository = repositoryManager.getRepository(repositoryId);
 
