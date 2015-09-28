@@ -2,8 +2,10 @@ package org.openrdf.spring;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openrdf.IsolationLevels;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
@@ -54,5 +56,22 @@ public class RepositoryManagerConnectionFactoryTest extends BaseTest {
     public void testWriteData() throws Exception {
         addData(repositoryManagerConnectionFactory);
         assertDataPresent(repositoryManagerConnectionFactory);
+    }
+
+
+    @Test
+    @Transactional(value = "transactionManager", isolation = Isolation.SERIALIZABLE)
+    public void testTransactionWithSerializableIsolationLevel() {
+        RepositoryConnection connection = repositoryConnectionFactory.getConnection();
+
+        Assert.assertEquals(IsolationLevels.SERIALIZABLE, connection.getIsolationLevel());
+    }
+
+    @Test
+    @Transactional(value = "transactionManager", isolation = Isolation.READ_COMMITTED)
+    public void testTransactionWithReadCommittedIsolationLevel() {
+        RepositoryConnection connection = repositoryConnectionFactory.getConnection();
+
+        Assert.assertEquals(IsolationLevels.READ_COMMITTED, connection.getIsolationLevel());
     }
 }

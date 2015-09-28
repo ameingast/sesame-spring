@@ -85,10 +85,10 @@ public class RepositoryConnectionFactoryTest extends BaseTest {
     }
 
     @Test
-    @Transactional(value = "transactionManager", isolation = Isolation.READ_UNCOMMITTED)
-    public void testTransactionWithReadUnCommittedIsolationLevel() {
+    @Transactional(value = "transactionManager", isolation = Isolation.READ_COMMITTED)
+    public void testTransactionWithReadCommittedIsolationLevel() {
         RepositoryConnection connection = repositoryConnectionFactory.getConnection();
 
-        Assert.assertEquals(IsolationLevels.READ_UNCOMMITTED, connection.getIsolationLevel());
+        Assert.assertEquals(IsolationLevels.READ_COMMITTED, connection.getIsolationLevel());
     }
 }
