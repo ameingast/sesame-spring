@@ -17,20 +17,10 @@ public class RepositoryManagerConnectionFactory extends DynamicRepositoryManager
      *                          identify the {@link org.openrdf.repository.Repository} to which connections will be opened.
      */
     public RepositoryManagerConnectionFactory(RepositoryManager repositoryManager, final String repositoryId) {
-        super(repositoryManager, new RepositoryIdProvider() {
-            @Override
-            public String getRepositoryId() {
-                return repositoryId;
-            }
-        });
+        super(repositoryManager, () -> repositoryId);
     }
 
     public RepositoryManagerConnectionFactory(RepositoryManager repositoryManager, RepositoryImplConfig repositoryImplConfig, final String repositoryId) {
-        super(repositoryManager, repositoryImplConfig, new RepositoryIdProvider() {
-            @Override
-            public String getRepositoryId() {
-                return repositoryId;
-            }
-        });
+        super(repositoryManager, repositoryImplConfig, () -> repositoryId);
     }
 }

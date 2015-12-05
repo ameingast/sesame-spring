@@ -43,11 +43,11 @@ public class RepositoryManagerConnectionFactoryTest extends BaseTest {
     }
 
     @Transactional
-    protected RepositoryConnection transactionScope() {
+    private RepositoryConnection transactionScope() {
         return repositoryManagerConnectionFactory.getConnection();
     }
 
-    protected RepositoryConnection transactionScopeWithoutAnnotation() {
+    private RepositoryConnection transactionScopeWithoutAnnotation() {
         return repositoryManagerConnectionFactory.getConnection();
     }
 

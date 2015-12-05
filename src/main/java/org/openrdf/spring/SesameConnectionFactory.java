@@ -24,7 +24,7 @@ public interface SesameConnectionFactory extends DisposableBean {
      *                                    <li>The connection was closed during the transaction</li>
      *                                    </ul>
      */
-    public RepositoryConnection getConnection();
+    RepositoryConnection getConnection();
 
     /**
      * <p>Closes the connection and cleans up the (thread-local) state for the current transaction.</p>

@@ -42,18 +42,18 @@ public class DynamicRepositoryManagerConnectionFactory implements SesameConnecti
      *                             identify the {@link org.openrdf.repository.Repository} to which connections will be opened is retrieved
      *                             from via a call-back from <code>repositoryIdProvider</code>.
      */
-    public DynamicRepositoryManagerConnectionFactory(RepositoryManager repositoryManager,
-                                                     RepositoryIdProvider repositoryIdProvider) {
+    DynamicRepositoryManagerConnectionFactory(RepositoryManager repositoryManager,
+                                              RepositoryIdProvider repositoryIdProvider) {
         this(repositoryManager, null, repositoryIdProvider);
     }
 
-    public DynamicRepositoryManagerConnectionFactory(RepositoryManager repositoryManager,
-                                                     RepositoryImplConfig repositoryImplConfig,
-                                                     RepositoryIdProvider repositoryIdProvider) {
+    DynamicRepositoryManagerConnectionFactory(RepositoryManager repositoryManager,
+                                              RepositoryImplConfig repositoryImplConfig,
+                                              RepositoryIdProvider repositoryIdProvider) {
         this.repositoryManager = repositoryManager;
         this.repositoryImplConfig = repositoryImplConfig;
         this.repositoryIdProvider = repositoryIdProvider;
-        this.repositoryConnectionFactoryMap = new HashMap<String, RepositoryConnectionFactory>(128);
+        this.repositoryConnectionFactoryMap = new HashMap<>(128);
     }
 
     /**
@@ -124,9 +124,7 @@ public class DynamicRepositoryManagerConnectionFactory implements SesameConnecti
             }
 
             return new RepositoryConnectionFactory(repository);
-        } catch (RepositoryException e) {
-            throw new SesameTransactionException(e);
-        } catch (RepositoryConfigException e) {
+        } catch (RepositoryException | RepositoryConfigException e) {
             throw new SesameTransactionException(e);
         }
     }
@@ -160,7 +158,7 @@ public class DynamicRepositoryManagerConnectionFactory implements SesameConnecti
      * Call-back helper to provide runtime-dynamic repository-ids for
      * {@link org.openrdf.spring.DynamicRepositoryManagerConnectionFactory}.
      */
-    public static interface RepositoryIdProvider {
+    public interface RepositoryIdProvider {
         String getRepositoryId();
     }
 }

@@ -9,7 +9,7 @@
     <groupId>org.openrdf.sesame</groupId>
     <artifactId>sesame-spring</artifactId>
 
-    <version>2.8.6</version>
+    <version>4.0.0</version>
     <name>${project.artifactId}</name>
 
     <description>
@@ -104,15 +104,14 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- logging -->
+        <!-- Logging -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>${slf4j.version}</version>
-            <scope>test</scope>
         </dependency>
 
-        <!-- Test -->
+        <!-- Unit Testing-->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -139,20 +138,23 @@
                     <source>${language-level}</source>
                     <target>${language-level}</target>
                     <encoding>${encoding}</encoding>
+                    <showWarnings>true</showWarnings>
+                    <showDeprecation>true</showDeprecation>
+                    <compilerArgument>-Xlint:all,-serial</compilerArgument>
                 </configuration>
             </plugin>
         </plugins>
     </build>
 
     <properties>
-        <spring.version>4.2.1.RELEASE</spring.version>
+        <spring.version>4.2.3.RELEASE</spring.version>
         <sesame.version>${project.version}</sesame.version>
         <junit.version>4.12</junit.version>
-        <slf4j.version>1.7.12</slf4j.version>
-        <cglib.version>3.1</cglib.version>
+        <slf4j.version>1.7.13</slf4j.version>
+        <cglib.version>3.2.0</cglib.version>
         <maven-compiler.version>3.3</maven-compiler.version>
 
         <encoding>UTF-8</encoding>
-        <language-level>1.6</language-level>
+        <language-level>1.8</language-level>
     </properties>
 </project>
