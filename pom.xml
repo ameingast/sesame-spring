@@ -41,6 +41,10 @@
         </license>
     </licenses>
 
+    <prerequisites>
+        <maven>3.0.0</maven>
+    </prerequisites>
+
     <!-- Spring -->
     <dependencies>
         <dependency>
@@ -143,6 +147,34 @@
                     <compilerArgument>-Xlint:all,-serial</compilerArgument>
                 </configuration>
             </plugin>
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>${maven-clean.version}</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>${maven-deploy.version}</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>${maven-install.version}</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>${maven-jar.version}</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>${maven-resources.version}</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>${maven-site.version}</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven-surefire.version}</version>
+            </plugin>
         </plugins>
     </build>
 
@@ -153,6 +185,13 @@
         <slf4j.version>1.7.18</slf4j.version>
         <cglib.version>3.2.1</cglib.version>
         <maven-compiler.version>3.3</maven-compiler.version>
+        <maven-clean.version>2.6.1</maven-clean.version>
+        <maven-deploy.version>2.8.2</maven-deploy.version>
+        <maven-install.version>2.5.2</maven-install.version>
+        <maven-jar.version>2.6</maven-jar.version>
+        <maven-resources.version>2.7</maven-resources.version>
+        <maven-site.version>3.4</maven-site.version>
+        <maven-surefire.version>2.18.1</maven-surefire.version>
 
         <encoding>UTF-8</encoding>
         <language-level>1.8</language-level>
