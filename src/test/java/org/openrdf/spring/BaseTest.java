@@ -7,11 +7,14 @@ import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -20,13 +23,15 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "/repositoryTestContext.xml")
 public abstract class BaseTest {
+    private static final Logger log = LoggerFactory.getLogger(BaseTest.class);
+
     @Autowired
     protected SesameConnectionFactory repositoryConnectionFactory;
 
     @Autowired
     protected SesameConnectionFactory repositoryManagerConnectionFactory;
 
-    static void assertDataPresent(SesameConnectionFactory sesameConnectionFactory) throws Exception {
+    static void assertDataPresent(SesameConnectionFactory sesameConnectionFactory) {
         RepositoryConnection connection = sesameConnectionFactory.getConnection();
         final TupleQuery tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL, "SELECT ?s ?o WHERE { ?s <http://example.com/b> ?o . }");
         TupleQueryResult result = tupleQuery.evaluate();
@@ -46,7 +51,11 @@ public abstract class BaseTest {
         try {
             tupleQueryResultHandler.handle(tupleQueryResult);
         } finally {
-            tupleQueryResult.close();
+            try {
+                tupleQueryResult.close();
+            } catch (QueryEvaluationException e) {
+                log.error(e.getMessage(), e);
+            }
         }
     }
 
